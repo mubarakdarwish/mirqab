@@ -1,0 +1,156 @@
+<div class="bg-white rounded-xl shadow-lg overflow-hidden p-6 sm:p-8">
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-8 border-b border-gray-200 pb-6">
+    <div>
+      <h2 class="text-3xl font-bold text-gray-800">إدارة بيانات النماذج</h2>
+      <p class="mt-2 text-md text-gray-600">إدارة الخيارات المتاحة في القوائم المنسدلة عند تسجيل المعاملات.</p>
+    </div>
+    <button (click)="onClose()" class="flex items-center px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+      <span>رجوع إلى إدارة البيانات</span>
+    </button>
+  </div>
+
+  <!-- Management Sections -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    @for (section of managementSections; track section.key) {
+      <div class="border border-gray-200 rounded-lg bg-gray-50/50 p-6 flex flex-col">
+        <h3 class="text-xl font-semibold text-gray-800 mb-4">{{ section.title }}</h3>
+        
+        @if (section.key === 'countries') {
+          <!-- Special UI for Country Management -->
+          <div class="flex flex-col flex-grow">
+             <div class="mb-4 space-y-2">
+                <input 
+                  type="text" 
+                  placeholder="ابحث عن بلد..." 
+                  [value]="countrySearchTerm()"
+                  (input)="countrySearchTerm.set($any($event.target).value)"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm focus:ring-green-500 focus:border-green-500"
+                >
+                <div class="flex items-center justify-end space-x-reverse space-x-2">
+                  <button (click)="selectAllCountries()" class="px-3 py-1.5 border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                      تحديد الكل
+                  </button>
+                  <button (click)="deselectAllCountries()" class="px-3 py-1.5 border border-gray-300 rounded-md shadow-sm text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                      إلغاء تحديد الكل
+                  </button>
+                </div>
+              </div>
+              <div class="flex-grow max-h-96 overflow-y-auto pr-2 border rounded-md p-2 bg-white">
+                 @for (country of filteredCountries(); track country) {
+                  <label class="flex items-center p-2 rounded hover:bg-gray-100 cursor-pointer">
+                    <input 
+                      type="checkbox"
+                      [checked]="isCountrySelected(country)"
+                      (change)="onCountryToggle(country, $event)"
+                      class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                    >
+                    <span class="mr-3 text-sm text-gray-800">{{ country }}</span>
+                  </label>
+                }
+                @if(filteredCountries().length === 0) {
+                  <p class="text-center text-gray-500 py-4 text-sm">لم يتم العثور على نتائج.</p>
+                }
+              </div>
+          </div>
+
+        } @else if (section.isSectorSpecific) {
+           <!-- Sector specific UI -->
+            <div class="flex flex-col flex-grow">
+                <!-- Tabs -->
+                <div class="border-b border-gray-200 mb-4">
+                    <nav class="-mb-px flex space-x-reverse space-x-4" aria-label="Tabs">
+                        @for (sector of sectorsForTabs; track sector.id) {
+                            <button 
+                                (click)="selectTab(section.key, sector.id)"
+                                [class]="activeSectorTabs()[section.key] === sector.id ? 'border-green-500 text-green-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                                class="whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm">
+                                {{ sector.title }}
+                            </button>
+                        }
+                    </nav>
+                </div>
+
+                <!-- Items List for selected tab -->
+                <div class="mb-4 flex-grow max-h-60 overflow-y-auto pr-2 space-y-2">
+                    @if(dropdownData()[section.key][activeSectorTabs()[section.key]]; as items) {
+                        @for (item of items; track item) {
+                            <div class="flex justify-between items-center bg-white p-2 border rounded-md text-sm">
+                            <span class="text-gray-800">{{ item }}</span>
+                            <button (click)="deleteItem(section.key, item)" class="p-1 text-gray-400 hover:text-red-500 rounded-full transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                            </button>
+                            </div>
+                        }
+                        @if(items.length === 0) {
+                            <p class="text-center text-gray-500 py-4 text-sm">لا توجد عناصر لهذا القطاع.</p>
+                        }
+                    }
+                </div>
+
+                <!-- Add form -->
+                <form [formGroup]="formGroups[section.key]" (ngSubmit)="addItem(section.key)" class="pt-4 border-t border-gray-200 space-y-3">
+                    <div>
+                        <label [for]="section.key + '-value'" class="sr-only">القيمة</label>
+                        <input type="text" [id]="section.key + '-value'" formControlName="value" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm focus:ring-green-500 focus:border-green-500" [placeholder]="section.placeholder">
+                    </div>
+                    <button type="submit" [disabled]="formGroups[section.key].invalid" class="w-full px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:bg-gray-400">
+                      إضافة لقطاع "{{ getSectorTabTitle(section.key) }}"
+                    </button>
+                </form>
+            </div>
+        } @else {
+          <!-- Generic UI for other sections -->
+          <div class="flex flex-col flex-grow">
+            <!-- Items List -->
+            <div class="mb-4 flex-grow max-h-60 overflow-y-auto pr-2 space-y-2">
+              @if (section.hasKey) {
+                @for (item of dropdownData()[section.key]; track item.key) {
+                    <div class="flex justify-between items-center bg-white p-2 border rounded-md text-sm">
+                      <span class="text-gray-800">{{ item.value }} <span class="text-xs text-gray-400 font-mono">({{item.key}})</span></span>
+                      <button (click)="deleteItem(section.key, item.key)" class="p-1 text-gray-400 hover:text-red-500 rounded-full transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                      </button>
+                    </div>
+                }
+                @if(dropdownData()[section.key].length === 0) {
+                    <p class="text-center text-gray-500 py-4 text-sm">لا توجد عناصر.</p>
+                }
+              } @else {
+                  @for (item of dropdownData()[section.key]; track item) {
+                    <div class="flex justify-between items-center bg-white p-2 border rounded-md text-sm">
+                      <span class="text-gray-800">{{ item }}</span>
+                      <button (click)="deleteItem(section.key, item)" class="p-1 text-gray-400 hover:text-red-500 rounded-full transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                      </button>
+                    </div>
+                }
+                @if(dropdownData()[section.key].length === 0) {
+                    <p class="text-center text-gray-500 py-4 text-sm">لا توجد عناصر.</p>
+                }
+              }
+            </div>
+
+            <!-- Add New Item Form -->
+            <form [formGroup]="formGroups[section.key]" (ngSubmit)="addItem(section.key)" class="pt-4 border-t border-gray-200 space-y-3">
+              @if (section.hasKey) {
+                <div>
+                    <label [for]="section.key + '-key'" class="sr-only">المعرّف (Key)</label>
+                    <input type="text" [id]="section.key + '-key'" formControlName="key" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm focus:ring-green-500 focus:border-green-500" placeholder="المعرّف (انجليزي بدون مسافات)">
+                </div>
+              }
+              <div>
+                <label [for]="section.key + '-value'" class="sr-only">القيمة</label>
+                <input type="text" [id]="section.key + '-value'" formControlName="value" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm focus:ring-green-500 focus:border-green-500" [placeholder]="section.placeholder">
+              </div>
+              <button type="submit" [disabled]="formGroups[section.key].invalid" class="w-full px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:bg-gray-400">
+                إضافة
+              </button>
+            </form>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

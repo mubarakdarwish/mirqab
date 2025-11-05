@@ -1,0 +1,30 @@
+<div class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
+  <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-8 m-4">
+    <h2 class="text-2xl font-bold text-gray-800 mb-2">تحديث نتيجة الفحص المخبري</h2>
+    <p class="text-gray-600 mb-6">
+        يرجى تسجيل النتيجة النهائية للعينة رقم: 
+        <span class="font-bold font-mono text-gray-800">{{ transaction().sampleNumber }}</span>
+    </p>
+    
+    <form [formGroup]="updateForm" (ngSubmit)="onSubmit()" class="space-y-4">
+      <div>
+        <label for="labResult" class="block text-sm font-medium text-gray-700">النتيجة النهائية *</label>
+        <select id="labResult" formControlName="labResult" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
+            <option value="" disabled>اختر النتيجة</option>
+            @for (result of labResults; track result) {
+                <option [value]="result">{{ result }}</option>
+            }
+        </select>
+      </div>
+
+      <div class="pt-4 flex justify-end space-x-reverse space-x-3">
+        <button type="button" (click)="onClose()" class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+          إلغاء
+        </button>
+        <button type="submit" [disabled]="updateForm.invalid" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:bg-gray-400">
+          حفظ النتيجة
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

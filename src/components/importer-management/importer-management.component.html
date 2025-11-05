@@ -1,0 +1,95 @@
+<div class="bg-white rounded-xl shadow-lg overflow-hidden p-6 sm:p-8">
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-8 border-b border-gray-200 pb-6">
+    <div>
+      <h2 class="text-3xl font-bold text-gray-800">إدارة الشركات المستوردة</h2>
+      <p class="mt-2 text-md text-gray-600">إضافة وتعديل وحذف بيانات الشركات المستوردة.</p>
+    </div>
+    <button (click)="onClose()" class="flex items-center px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+      <span>رجوع إلى إدارة البيانات</span>
+    </button>
+  </div>
+
+  <!-- Add New Importer -->
+  <div class="mb-8 p-6 bg-gray-50 border border-gray-200 rounded-lg">
+    <h3 class="text-xl font-semibold text-gray-800 mb-4">إضافة شركة جديدة</h3>
+    <form [formGroup]="newImporterForm" (ngSubmit)="addImporter()" class="space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+        <div>
+          <label for="crNumber" class="block text-sm font-medium text-gray-700 mb-1">رقم السجل التجاري *</label>
+          <input type="text" id="crNumber" formControlName="crNumber" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500" placeholder="e.g., 1234567">
+        </div>
+        <div>
+          <label for="name" class="block text-sm font-medium text-gray-700 mb-1">اسم الشركة *</label>
+          <input type="text" id="name" formControlName="name" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500" placeholder="اسم الشركة التجاري">
+        </div>
+        <div>
+          <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">رقم الهاتف *</label>
+          <input type="text" id="phone" formControlName="phone" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500" placeholder="e.g., 9xxxxxxx">
+        </div>
+        <div>
+          <label for="email" class="block text-sm font-medium text-gray-700 mb-1">البريد الإلكتروني *</label>
+          <input type="email" id="email" formControlName="email" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500" placeholder="e.g., contact@company.com">
+        </div>
+         <div class="md:col-span-2">
+          <label for="activityType" class="block text-sm font-medium text-gray-700 mb-1">نوع النشاط *</label>
+          <input type="text" id="activityType" formControlName="activityType" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500" placeholder="e.g., استيراد مواد غذائية">
+        </div>
+        <div class="md:col-span-2">
+          <label for="address" class="block text-sm font-medium text-gray-700 mb-1">عنوان الشركة *</label>
+          <input type="text" id="address" formControlName="address" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500" placeholder="e.g., مسقط، المنطقة الصناعية">
+        </div>
+      </div>
+      <div class="flex justify-end pt-4 border-t border-gray-200">
+        <button type="submit" [disabled]="newImporterForm.invalid" class="w-full md:w-auto px-6 py-2.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:bg-gray-400 disabled:cursor-not-allowed">
+          إضافة شركة
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Importers List -->
+  <div class="overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">رقم السجل التجاري</th>
+          <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">اسم الشركة</th>
+          <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">بيانات التواصل</th>
+          <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">النشاط والعنوان</th>
+          <th scope="col" class="relative px-6 py-3">
+            <span class="sr-only">حذف</span>
+          </th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        @for (importer of importers(); track importer.crNumber) {
+          <tr>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-500">{{ importer.crNumber }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ importer.name }}</td>
+             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <div class="font-medium">{{ importer.phone }}</div>
+                  <div class="text-gray-500">{{ importer.email }}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <div class="font-medium">{{ importer.activityType }}</div>
+                  <div class="text-gray-500">{{ importer.address }}</div>
+                </td>
+            <td class="px-6 py-4 whitespace-nowrap text-left text-sm font-medium">
+              <button (click)="deleteImporter(importer)" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-100 rounded-full transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5" class="px-6 py-12 text-center text-sm text-gray-500">
+              لا توجد شركات مسجلة. ابدأ بإضافة شركة جديدة أعلاه.
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

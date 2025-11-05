@@ -1,0 +1,82 @@
+<div class="min-h-screen bg-gray-100 text-gray-800" dir="rtl">
+  <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- Header -->
+    <header class="bg-white rounded-2xl shadow-lg p-4 sm:p-5 mb-8 flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">بوابة المختبر</h1>
+            <p class="text-md text-gray-600">مرحباً, {{ user().name }} ({{ user().laboratoryName }})</p>
+        </div>
+        <button (click)="onLogout()" class="flex items-center px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+            <span>تسجيل الخروج</span>
+        </button>
+    </header>
+    
+    <!-- Samples Table -->
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+       <div class="p-6 sm:p-8 border-b border-gray-200">
+        <h3 class="text-2xl font-bold text-gray-800">العينات المسجلة</h3>
+        <p class="mt-1 text-md text-gray-600">قائمة بالعينات المرسلة إلى مختبركم للفحص.</p>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">رقم العينة</th>
+              <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">تاريخ أخذ العينة</th>
+               <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الشركة المستوردة</th>
+              <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الحالة</th>
+              <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">نتيجة الفحص</th>
+              <th scope="col" class="relative px-6 py-3"><span class="sr-only">إجراء</span></th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            @for (sample of labSamples(); track sample.sampleNumber) {
+              <tr>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-600">{{ sample.sampleNumber }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ sample.sampleDate }}</td>
+                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ sample.importingCompany }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    @if (sample.sampleStatus === 'complete') {
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                        مكتمل
+                        </span>
+                    } @else {
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                        قيد الفحص
+                        </span>
+                    }
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-bold">
+                    {{ sample.labResult || '—' }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-left text-sm font-medium">
+                    @if (sample.sampleStatus !== 'complete') {
+                        <button (click)="openUpdateModal(sample)" class="px-4 py-1.5 border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                            تحديث النتيجة
+                        </button>
+                    }
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6" class="px-6 py-12 text-center text-sm text-gray-500">
+                  لا توجد عينات مسجلة باسم مختبركم حالياً.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+@if (selectedSample(); as sample) {
+    <app-update-lab-result 
+        [transaction]="sample"
+        (close)="closeUpdateModal()"
+        (resultUpdated)="onResultUpdated($event)"
+    />
+}

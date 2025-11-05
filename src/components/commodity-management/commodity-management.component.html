@@ -1,0 +1,78 @@
+<div class="bg-white rounded-xl shadow-lg overflow-hidden p-6 sm:p-8">
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-8 border-b border-gray-200 pb-6">
+    <div>
+      <h2 class="text-3xl font-bold text-gray-800">إدارة المجموعات والسلع</h2>
+      <p class="mt-2 text-md text-gray-600">إضافة وتعديل وحذف مجموعات السلع والسلع الفردية.</p>
+    </div>
+    <button (click)="onClose()" class="flex items-center px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+      <span>رجوع إلى إدارة البيانات</span>
+    </button>
+  </div>
+
+  <!-- Add New Group -->
+  <div class="mb-8 p-6 bg-gray-50 border border-gray-200 rounded-lg">
+    <h3 class="text-xl font-semibold text-gray-800 mb-4">إضافة مجموعة جديدة</h3>
+    <form [formGroup]="newGroupForm" (ngSubmit)="addGroup()" class="flex items-start space-x-reverse space-x-3">
+      <div class="flex-grow">
+        <label for="newGroupName" class="sr-only">اسم المجموعة الجديدة</label>
+        <input type="text" id="newGroupName" formControlName="name" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500" placeholder="مثال: ألبان، حبوب، معلبات...">
+      </div>
+      <button type="submit" [disabled]="newGroupForm.invalid" class="px-5 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:bg-gray-400 disabled:cursor-not-allowed">
+        إضافة مجموعة
+      </button>
+    </form>
+  </div>
+
+  <!-- Groups List -->
+  <div class="space-y-6">
+    @for (group of groups(); track group.name) {
+      <div class="border border-gray-200 rounded-lg overflow-hidden">
+        <!-- Group Header -->
+        <div class="bg-gray-50 p-4 flex justify-between items-center border-b border-gray-200">
+          <h4 class="text-lg font-bold text-gray-700">{{ group.name }}</h4>
+          <button (click)="deleteGroup(group.name)" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-100 rounded-full transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+          </button>
+        </div>
+
+        <!-- Commodities List & Form -->
+        <div class="p-4">
+          @if (group.commodities.length > 0) {
+            <ul class="space-y-2 mb-4">
+              @for (commodity of group.commodities; track commodity) {
+                <li class="flex justify-between items-center bg-white p-2 border rounded-md">
+                  <span class="text-gray-800">{{ commodity }}</span>
+                  <button (click)="deleteCommodity(group.name, commodity)" class="p-1 text-gray-400 hover:text-red-500 rounded-full transition-colors">
+                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                  </button>
+                </li>
+              }
+            </ul>
+          } @else {
+            <p class="text-center text-gray-500 py-4">لا توجد سلع في هذه المجموعة. قم بإضافة واحدة أدناه.</p>
+          }
+
+          <!-- Add New Commodity Form -->
+          @if (newCommodityForms[group.name]; as commodityForm) {
+            <form [formGroup]="commodityForm" (ngSubmit)="addCommodity(group.name)" class="flex items-start space-x-reverse space-x-2 pt-4 border-t border-gray-100">
+              <div class="flex-grow">
+                 <label [for]="'newCommodityName-' + group.name" class="sr-only">اسم السلعة الجديدة</label>
+                 <input type="text" [id]="'newCommodityName-' + group.name" formControlName="name" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm focus:ring-green-500 focus:border-green-500" placeholder="أضف سلعة جديدة إلى '{{ group.name }}'">
+              </div>
+              <button type="submit" [disabled]="commodityForm.invalid" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400">
+                إضافة سلعة
+              </button>
+            </form>
+          }
+        </div>
+      </div>
+    } @empty {
+      <div class="text-center py-12 border-2 border-dashed border-gray-300 rounded-lg">
+        <h3 class="text-lg font-medium text-gray-900">لا توجد مجموعات</h3>
+        <p class="mt-1 text-sm text-gray-500">ابدأ بإضافة مجموعة جديدة أعلاه.</p>
+      </div>
+    }
+  </div>
+</div>

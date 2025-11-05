@@ -1,0 +1,111 @@
+<div class="relative min-h-screen flex items-center justify-center bg-gray-100 px-4 sm:px-6 lg:px-8 bg-cover bg-center" style="background-image: url('https://picsum.photos/seed/tracking/1920/1080');">
+  <div class="absolute inset-0 bg-green-900 bg-opacity-70"></div>
+
+  <div class="relative max-w-4xl w-full space-y-8 z-10" dir="rtl">
+    
+    <div class="text-center">
+        <div class="flex items-center justify-center">
+            <div class="h-20 w-20 text-white">
+               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-3zm0 2.18L18.01 6.5v4.32c-1.34 2.1-3.33 3.73-5.76 4.54l-0.25 0.08 -0.25 -0.08c-2.43-0.81-4.42-2.44-5.76-4.54V6.5L12 4.18zM6.5 12.25c1.78.9 3.79 1.45 6 1.45s4.22-0.55 6-1.45C17.58 13.92 15.14 16 12 16s-5.58-2.08-6.5-3.75z"/>
+                 <path d="M12 9c-1.3 0-2.42-0.36-3.33-1C9.64 6.27 10.8 5 12 5s2.36 1.27 3.33 3c-0.91 0.64-2.03 1-3.33 1z" opacity="0.4"/>
+              </svg>
+            </div>
+          </div>
+        <h1 class="text-4xl font-extrabold text-white">بوابة تتبع المعاملات</h1>
+        <p class="mt-2 text-lg text-green-200">أدخل رقم البيان الجمركي لمتابعة حالة شحنتك.</p>
+    </div>
+
+    <div class="bg-white p-8 rounded-2xl shadow-2xl">
+        <form [formGroup]="searchForm" (ngSubmit)="onSearch()">
+            <div class="flex flex-col sm:flex-row items-start gap-3">
+                <div class="w-full">
+                    <label for="declarationNumber" class="sr-only">رقم البيان الجمركي</label>
+                    <input type="text" id="declarationNumber" formControlName="declarationNumber" class="w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-lg" placeholder="أدخل رقم البيان الجمركي هنا...">
+                </div>
+                <button type="submit" [disabled]="searchForm.invalid || isLoading()" class="w-full sm:w-auto flex justify-center items-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:bg-gray-400">
+                    @if(isLoading()) {
+                         <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    } @else {
+                        <span>بحث</span>
+                    }
+                </button>
+            </div>
+        </form>
+
+        <div class="mt-8 border-t border-gray-200 pt-6">
+            @if (isLoading()) {
+                <p class="text-center text-gray-500">جاري البحث...</p>
+            } @else if(searched()) {
+                @if (transaction(); as trans) {
+                    <div class="space-y-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-500">نتيجة الفحص</h3>
+                                @if (trans.inspectionResult === 'compliant') {
+                                    <p class="mt-1 text-lg font-semibold px-2 inline-flex leading-5 rounded-full bg-green-100 text-green-800">مطابق</p>
+                                } @else {
+                                    <p class="mt-1 text-lg font-semibold px-2 inline-flex leading-5 rounded-full bg-red-100 text-red-800">غير مطابق</p>
+                                }
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-500">حالة العينة</h3>
+                                 @if(trans.sampleTaken === 'yes') {
+                                    @if (trans.sampleStatus === 'complete') {
+                                        <p class="mt-1 text-lg font-semibold text-green-700">مكتمل</p>
+                                    } @else {
+                                        <p class="mt-1 text-lg font-semibold text-yellow-700">قيد الفحص</p>
+                                    }
+                                } @else {
+                                    <p class="mt-1 text-lg font-semibold text-gray-400">—</p>
+                                }
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-500">الإجراء النهائي</h3>
+                                <p class="mt-1 text-lg font-semibold text-gray-800">{{ finalActionMap[trans.finalAction] || trans.finalAction }}</p>
+                            </div>
+                        </div>
+
+                         <dl class="border-t border-gray-200 pt-6 grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-6">
+                            <div class="sm:col-span-1">
+                              <dt class="text-sm font-medium text-gray-500">رقم المعاملة</dt>
+                              <dd class="mt-1 text-sm text-gray-900 font-mono">{{ trans.transactionNumber }}</dd>
+                            </div>
+                            <div class="sm:col-span-1">
+                              <dt class="text-sm font-medium text-gray-500">الشركة المستوردة</dt>
+                              <dd class="mt-1 text-sm text-gray-900">{{ trans.importingCompany }}</dd>
+                            </div>
+                             <div class="sm:col-span-1">
+                              <dt class="text-sm font-medium text-gray-500">تاريخ المعاملة</dt>
+                              <dd class="mt-1 text-sm text-gray-900">{{ trans.transactionDate }}</dd>
+                            </div>
+                            <div class="sm:col-span-1">
+                              <dt class="text-sm font-medium text-gray-500">المنفذ</dt>
+                              <dd class="mt-1 text-sm text-gray-900">{{ trans.portOfEntry }}</dd>
+                            </div>
+                            @if(trans.sampleTaken === 'yes') {
+                                <div class="sm:col-span-2 border-t border-gray-100 pt-4">
+                                  <dt class="text-sm font-medium text-gray-500">نتيجة الفحص المخبري</dt>
+                                  <dd class="mt-1 text-sm font-bold text-gray-900">{{ trans.labResult || 'لم تسجل بعد' }}</dd>
+                                </div>
+                            }
+                        </dl>
+                    </div>
+                } @else {
+                     <p class="text-center text-gray-500">لم يتم العثور على معاملة بهذا الرقم. يرجى التأكد من الرقم والمحاولة مرة أخرى.</p>
+                }
+            } @else {
+                 <p class="text-center text-gray-500">أدخل رقم البيان الجمركي الخاص بك أعلاه لعرض حالة المعاملة.</p>
+            }
+        </div>
+
+    </div>
+    
+    <div class="text-center mt-6">
+        <button (click)="onReturn()" class="text-sm text-green-200 hover:text-white hover:underline">العودة إلى تسجيل الدخول</button>
+    </div>
+  </div>
+</div>

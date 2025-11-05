@@ -1,0 +1,182 @@
+@switch (view()) {
+  @case ('initial_setup') {
+    <app-initial-setup />
+  }
+  @case ('login') {
+    <app-login (loginSuccess)="onLoginSuccess($event)"></app-login>
+  }
+  @case ('public_tracking') {
+    <app-public-tracking (returnToLogin)="returnToLogin()" />
+  }
+  @case ('app') {
+    @if (currentUser(); as user) {
+
+      @if (isInternalUser()) {
+        <!-- INTERNAL PORTAL -->
+        <div class="min-h-screen bg-gray-50 text-gray-800" dir="rtl">
+          <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            
+            <!-- Floating Navigation Card -->
+            <header class="bg-white rounded-2xl shadow-lg p-4 sm:p-5 mb-8">
+              <!-- Top Row: User Info & Time -->
+              <div class="flex justify-between items-center border-b border-gray-200 pb-4">
+                <!-- User Menu -->
+                <div class="relative">
+                  <button (click)="userMenuOpen.set(!userMenuOpen())" class="flex items-center">
+                    <div class="w-10 h-10 rounded-full bg-green-200 flex items-center justify-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                    </div>
+                    <div class="mr-3 text-right">
+                      <p class="font-semibold text-gray-800 text-sm">{{ user.name }}</p>
+                      <div class="flex items-center justify-end">
+                          @if (activeRole(); as role) {
+                            <span class="text-xs font-semibold text-green-700">{{ roleMap[role] }}</span>
+                            <span class="mx-1 text-gray-300">|</span>
+                          }
+                          <p class="text-xs text-gray-500">{{ user.jobTitle }}</p>
+                      </div>
+                    </div>
+                  </button>
+                  @if(userMenuOpen()) {
+                    <div class="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-100">
+                      <div class="px-4 py-3 border-b border-gray-200">
+                        <p class="text-sm font-semibold text-gray-900">{{ user.name }}</p>
+                        <p class="text-xs text-gray-500">{{ user.jobTitle }}</p>
+                      </div>
+                      <button (click)="onLogout()" class="w-full text-right px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                        <span>تسجيل الخروج</span>
+                      </button>
+                    </div>
+                  }
+                </div>
+
+                <!-- Date & Time -->
+                <div class="hidden md:flex items-center space-x-4 text-sm text-right">
+                  <div class="flex items-center text-gray-500">
+                    <div class="text-right">
+                      <p class="font-medium text-gray-700">{{ gregorianDate() }}</p>
+                      <p class="text-xs">{{ hijriDate() }}</p>
+                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                  </div>
+                  <div class="h-8 w-px bg-gray-200"></div>
+                  <div class="flex items-center text-gray-500">
+                    <span class="font-semibold text-gray-700 font-mono tracking-wider">{{ formattedTime() }}</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Bottom Row: Navigation -->
+              <nav class="flex flex-wrap items-center justify-center gap-2 pt-4">
+                <button (click)="showMainDashboard()" [class]="activeSection() === 'main' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'" class="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200">
+                  <svg class="h-5 w-5 ml-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" /></svg>
+                  <span>لوحة التحكم الرئيسية</span>
+                </button>
+                
+                <div class="h-6 w-px bg-gray-200 mx-2 hidden sm:block"></div>
+                
+                @for (sector of visibleSectors(); track sector.id) {
+                  <button (click)="selectSector(sector.id)" [class]="activeSection() === sector.id ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'" class="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200">
+                    <span [innerHTML]="sector.icon.replace('h-16 w-16', 'h-5 w-5').replace('text-green-500', '').replace('text-blue-500', '').replace('text-red-500', '')" class="ml-2"></span>
+                    <span>{{ sector.title }}</span>
+                  </button>
+                }
+                
+                <div class="h-6 w-px bg-gray-200 mx-2 hidden sm:block"></div>
+
+                <button (click)="showDataManagement()" [class]="activeSection() === 'data_management' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'" class="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7a8 8 0 0116 0" />
+                  </svg>
+                  <span>إدارة البيانات</span>
+                </button>
+              </nav>
+            </header>
+
+            <!-- Page Title -->
+            <div class="mb-6">
+              <h2 class="text-3xl font-bold text-gray-800">
+                {{ pageTitle() }}
+              </h2>
+            </div>
+
+            <!-- Main Content -->
+            <main>
+              @if (activeSection() !== 'data_management') {
+                @switch (sectorView()) {
+                  @case ('dashboard') {
+                    @if (activeSection() === 'main') {
+                      <app-main-dashboard [sectors]="visibleSectors()" (selectSector)="selectSector($event)" />
+                    } @else {
+                      @if (selectedSector(); as sector) {
+                        <app-quarantine-dashboard [sectorData]="sector" (registerImport)="showImportForm()" />
+                      }
+                    }
+                  }
+                  @case ('import_form') {
+                    @if (selectedSector(); as sector) {
+                      <app-import-form [sectorData]="sector" (formClose)="showSectorDashboard()" />
+                    }
+                  }
+                }
+              } @else {
+                @switch (managementView()) {
+                  @case ('dashboard') {
+                    <app-data-management-dashboard 
+                      (navigateToImporters)="showImporterManagement()"
+                      (navigateToCommodities)="showCommodityManagement()"
+                      (navigateToDropdowns)="showDropdownManagement()"
+                      (navigateToUsers)="showUserManagement()"
+                      (navigateToPublicTracking)="showPublicTracking()"
+                    />
+                  }
+                  @case ('importers') {
+                    <app-importer-management (closeView)="showDataManagementDashboard()" />
+                  }
+                  @case ('commodities') {
+                    <app-commodity-management (closeView)="showDataManagementDashboard()" />
+                  }
+                  @case ('dropdowns') {
+                    <app-dropdown-management (closeView)="showDataManagementDashboard()" />
+                  }
+                  @case ('users') {
+                    <app-user-management (closeView)="showDataManagementDashboard()" />
+                  }
+                }
+              }
+            </main>
+              
+            <!-- Footer -->
+            <footer class="bg-transparent mt-8">
+              <div class="container mx-auto py-6 text-center text-gray-500 text-sm">
+                <p>&copy; 2024 وزارة الثروة الزراعية والسمكية وموارد المياه - سلطنة عمان. جميع الحقوق محفوظة.</p>
+              </div>
+            </footer>
+          </div>
+        </div>
+      } @else if (user.roles.includes('laboratory')) {
+          <!-- LABORATORY PORTAL -->
+        <app-laboratory-portal [user]="user" (logout)="onLogout()" />
+      }
+
+      <!-- MODALS (Common for all portals) -->
+      @if (showChangePasswordModal()) {
+        <app-change-password (passwordChanged)="onPasswordChanged()" />
+      }
+
+      @if (showRoleSelectionModal()) {
+        <app-role-selection [user]="user" (roleSelected)="onRoleSelected($event)" />
+      }
+      
+      @if (confirmationState().isOpen) {
+        <app-confirmation-dialog 
+          [title]="confirmationState().title" 
+          [message]="confirmationState().message" 
+          (confirm)="onConfirm()" 
+          (cancel)="onCancel()" />
+      }
+    }
+  }
+}
